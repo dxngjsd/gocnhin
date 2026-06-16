@@ -7,12 +7,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // ← Thay bằng Firebase config của bạn
     const firebaseConfig = {
       apiKey: "AIzaSyAYC9w4BTV-JTwF-7ha3K-63FaA9LOsukY",
       authDomain: "gocnhin-d6d91.firebaseapp.com",
@@ -26,65 +24,51 @@
     const db = getFirestore(app);
 
     async function loadPosts() {
-      const container = document.getElementById('post-list');
-      const heroSection = document.getElementById('hero-section');
       try {
         const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
         const snapshot = await getDocs(q);
         const posts = [];
         snapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
-
-        if (posts.length === 0) {
-          container.innerHTML = '<p class="empty">Chưa có bài viết nào.</p>';
-          return;
-        }
+        if (posts.length === 0) return; // keep hardcoded UI if no posts
 
         // Hero = bài mới nhất
         const hero = posts[0];
-        heroSection.innerHTML = `
+        document.getElementById('hero-section').innerHTML = `
           <div class="hero-tag">Bài nổi bật</div>
           <h1 class="hero-title">${hero.title}</h1>
-          <p class="hero-excerpt">${hero.excerpt || hero.content.slice(0, 160)}...</p>
+          <p class="hero-excerpt">${hero.excerpt || hero.content.slice(0, 180)}...</p>
           <div class="hero-footer">
             <div class="author-chip"><div class="avatar">D</div> Damien Nguyen</div>
             <span class="meta-sep">·</span>
             <span class="meta-text">${formatDate(hero.createdAt)}</span>
-            ${hero.category ? `<span class="tag-pill">${hero.category}</span>` : ''}
+            ${hero.category ? `<span class="tag-pill blue">${hero.category}</span>` : ''}
             <a href="post.html?id=${hero.id}" class="read-btn">Đọc bài →</a>
           </div>
         `;
 
-        // Remaining posts
-        container.innerHTML = posts.slice(1).map((p, i) => `
-          <a href="post.html?id=${p.id}" class="post-item">
-            <div>
-              ${p.category ? `<div class="post-cat ${catClass(p.category)}">${p.category}</div>` : ''}
-              <div class="post-title-text">${p.title}</div>
-              <div class="post-meta">${formatDate(p.createdAt)} · ${readTime(p.content)} phút đọc</div>
-            </div>
-            <div class="post-num">${String(i + 1).padStart(2, '0')}</div>
-          </a>
-        `).join('');
-
-      } catch (e) {
-        container.innerHTML = '<p class="empty">Lỗi tải bài viết. Kiểm tra Firebase config.</p>';
-        console.error(e);
-      }
+        if (posts.length > 1) {
+          document.getElementById('post-list').innerHTML = posts.slice(1).map((p, i) => `
+            <a href="post.html?id=${p.id}" class="post-item">
+              <div>
+                ${p.category ? `<div class="post-cat ${catClass(p.category)}">${p.category}</div>` : ''}
+                <div class="post-title-text">${p.title}</div>
+                <div class="post-meta">${formatDate(p.createdAt)} · ${readTime(p.content)} phút đọc</div>
+              </div>
+              <div class="post-num">${String(i + 1).padStart(2, '0')}</div>
+            </a>
+          `).join('');
+        }
+      } catch(e) { console.error(e); }
     }
 
     function formatDate(ts) {
       if (!ts) return '';
       const d = ts.toDate ? ts.toDate() : new Date(ts);
-      return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' });
+      return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'long' });
     }
-
-    function readTime(content) {
-      return Math.max(1, Math.ceil((content || '').split(' ').length / 200));
-    }
-
+    function readTime(c) { return Math.max(1, Math.ceil((c||'').split(' ').length / 200)); }
     function catClass(cat) {
-      const map = { 'CANSLIM': 'canslim', 'Vĩ mô VN': 'vimo', 'Phân tích ngành': 'nganh', 'Kiến thức': 'kienthuc' };
-      return map[cat] || 'kienthuc';
+      return {'CANSLIM':'canslim','Vĩ mô VN':'vimo','Phân tích ngành':'nganh','Kiến thức':'kienthuc'}[cat]||'kienthuc';
     }
 
     loadPosts();
@@ -92,7 +76,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-400: #1D9E75; --teal-600: #0F6E56;
+      --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-400: #1D9E75; --teal-600: #0F6E56; --teal-800: #085041;
       --blue-50: #E6F1FB; --blue-600: #185FA5;
       --amber-50: #FAEEDA; --amber-600: #BA7517;
       --purple-50: #EEEDFE; --purple-600: #534AB7;
@@ -111,26 +95,53 @@
     }
     body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg-secondary); color: var(--text-primary); min-height: 100vh; }
     a { text-decoration: none; color: inherit; }
+
+    /* NAV */
     nav { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 100; }
     .nav-inner { max-width: 960px; margin: 0 auto; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
     .logo { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; letter-spacing: -0.5px; display: flex; align-items: center; gap: 5px; }
     .logo-dot { width: 7px; height: 7px; background: var(--teal-400); border-radius: 50%; }
-    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links { display: flex; gap: 28px; list-style: none; align-items: center; }
     .nav-links a { font-size: 13px; color: var(--text-secondary); transition: color 0.15s; }
     .nav-links a:hover { color: var(--text-primary); }
+    .nav-item-with-plus { display: flex; align-items: center; gap: 5px; }
+    .admin-plus {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--teal-50); border: 0.5px solid var(--teal-100);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600; color: var(--teal-600);
+      cursor: pointer; transition: all 0.15s; line-height: 1;
+    }
+    .admin-plus:hover { background: var(--teal-400); color: #fff; border-color: var(--teal-400); }
+
+    /* TICKER */
+    .ticker-wrap { background: var(--teal-50); border-bottom: 0.5px solid var(--teal-100); }
+    .ticker-inner { max-width: 960px; margin: 0 auto; padding: 9px 32px; display: flex; gap: 28px; font-size: 12px; font-weight: 500; color: var(--teal-800); overflow-x: auto; scrollbar-width: none; }
+    .ticker-inner::-webkit-scrollbar { display: none; }
+    .ticker-item { white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+    .up { color: var(--teal-600); }
+    .dn { color: #A32D2D; }
+
+    /* PAGE */
     .page { max-width: 960px; margin: 0 auto; padding: 28px 32px 60px; display: grid; grid-template-columns: minmax(0,1fr) 280px; gap: 20px; align-items: start; }
-    .hero { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 16px; padding: 40px 44px 36px; margin-bottom: 24px; min-height: 220px; }
+
+    /* HERO */
+    .hero { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 16px; padding: 40px 44px 36px; margin-bottom: 24px; }
     .hero-tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-600); background: var(--teal-50); padding: 4px 10px; border-radius: 20px; margin-bottom: 18px; }
     .hero-title { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 600; line-height: 1.28; letter-spacing: -0.5px; margin-bottom: 14px; }
-    .hero-excerpt { font-size: 15px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 24px; }
+    .hero-excerpt { font-size: 15px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 28px; }
     .hero-footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
     .author-chip { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-secondary); }
     .avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--teal-400); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: #fff; }
     .meta-sep { color: var(--text-tertiary); }
     .meta-text { font-size: 12px; color: var(--text-tertiary); }
-    .tag-pill { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 12px; background: var(--blue-50); color: var(--blue-600); }
-    .read-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 500; color: var(--teal-400); border: 0.5px solid var(--teal-100); background: var(--teal-50); padding: 7px 14px; border-radius: 8px; cursor: pointer; transition: opacity 0.15s; }
+    .tag-pill { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 12px; }
+    .tag-pill.blue { background: var(--blue-50); color: var(--blue-600); }
+    .tag-pill.teal { background: var(--teal-50); color: var(--teal-600); }
+    .read-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 500; color: var(--teal-400); border: 0.5px solid var(--teal-100); background: var(--teal-50); padding: 7px 14px; border-radius: 8px; transition: opacity 0.15s; }
     .read-btn:hover { opacity: 0.8; }
+
+    /* CARD / POSTS */
     .card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 16px; overflow: hidden; }
     .card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 12px; border-bottom: 0.5px solid var(--border); }
     .card-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); }
@@ -146,6 +157,8 @@
     .post-title-text { font-size: 14px; font-weight: 500; line-height: 1.45; color: var(--text-primary); margin-bottom: 6px; }
     .post-meta { font-size: 11px; color: var(--text-tertiary); }
     .post-num { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 600; color: var(--border); letter-spacing: -1px; min-width: 32px; text-align: right; flex-shrink: 0; }
+
+    /* SIDEBAR */
     .sidebar { display: flex; flex-direction: column; gap: 16px; }
     .about-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 16px; padding: 20px; }
     .about-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
@@ -153,9 +166,18 @@
     .about-name { font-size: 15px; font-weight: 500; }
     .about-role { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
     .about-bio { font-size: 13px; color: var(--text-secondary); line-height: 1.6; border-top: 0.5px solid var(--border); padding-top: 12px; }
-    .empty { padding: 20px; font-size: 14px; color: var(--text-tertiary); text-align: center; }
+    .watch-list { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .watch-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 16px; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+    .watch-row:last-child { border-bottom: none; }
+    .watch-ticker { font-weight: 600; font-family: 'Space Grotesk', sans-serif; }
+    .watch-price { color: var(--text-secondary); font-size: 12px; }
+    .watch-chg { font-size: 12px; font-weight: 500; }
+    .watch-chg.up { color: var(--teal-600); }
+    .watch-chg.dn { color: #A32D2D; }
+
     footer { border-top: 0.5px solid var(--border); padding: 24px 0 40px; }
     .footer-inner { max-width: 960px; margin: 0 auto; padding: 0 32px; display: flex; justify-content: space-between; font-size: 12px; color: var(--text-tertiary); }
+
     @media (max-width: 760px) {
       .nav-links { display: none; }
       .page { grid-template-columns: 1fr; padding: 20px; }
@@ -170,7 +192,10 @@
     <div class="nav-inner">
       <a href="index.html" class="logo">GócNhìn <span class="logo-dot"></span></a>
       <ul class="nav-links">
-        <li><a href="posts.html">Phân tích</a></li>
+        <li class="nav-item-with-plus">
+          <a href="posts.html">Phân tích</a>
+          <a href="admin.html" class="admin-plus" title="Đăng bài mới">+</a>
+        </li>
         <li><a href="posts.html?cat=Vĩ+mô+VN">Vĩ mô</a></li>
         <li><a href="posts.html?cat=CANSLIM">CANSLIM</a></li>
         <li><a href="about.html">Về tôi</a></li>
@@ -178,30 +203,77 @@
     </div>
   </nav>
 
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <div class="ticker-item">VN-Index <span class="up">▲ 1.247,38</span></div>
+      <div class="ticker-item">HNX <span class="up">▲ 218,54</span></div>
+      <div class="ticker-item">PHR <span class="dn">▼ 52.400</span></div>
+      <div class="ticker-item">GMD <span class="up">▲ 71.200</span></div>
+      <div class="ticker-item">MSN <span class="up">▲ 89.500</span></div>
+      <div class="ticker-item">MWG <span class="up">▲ 44.300</span></div>
+      <div class="ticker-item">VIC <span class="dn">▼ 38.100</span></div>
+    </div>
+  </div>
+
   <div class="page">
     <div>
       <div class="hero" id="hero-section">
         <div class="hero-tag">Bài nổi bật</div>
-        <p style="color:var(--text-tertiary);font-size:14px;">Đang tải...</p>
+        <h1 class="hero-title">MSN Q1/2025 — Mảng tiêu dùng phục hồi, nhưng định giá đã phản ánh đủ chưa?</h1>
+        <p class="hero-excerpt">Sau quý tăng trưởng bất ngờ từ Masan Consumer, tôi thử bóc tách từng mảng lợi nhuận để xem thực chất câu chuyện tăng trưởng ở đâu — và liệu thị trường đang định giá điều gì vào cổ phiếu MSN hiện tại.</p>
+        <div class="hero-footer">
+          <div class="author-chip"><div class="avatar">D</div> Damien Nguyen</div>
+          <span class="meta-sep">·</span>
+          <span class="meta-text">12 tháng 6, 2025</span>
+          <span class="meta-sep">·</span>
+          <span class="meta-text">8 phút đọc</span>
+          <span class="tag-pill blue">MSN</span>
+          <span class="tag-pill teal">Phân tích</span>
+          <a href="post.html" class="read-btn">Đọc bài →</a>
+        </div>
       </div>
+
       <div class="card">
         <div class="card-header">
           <span class="card-label">Bài viết gần đây</span>
           <a href="posts.html" class="see-all">Xem tất cả →</a>
         </div>
-        <div id="post-list"><p class="empty">Đang tải...</p></div>
+        <div id="post-list">
+          <a href="post.html" class="post-item">
+            <div><div class="post-cat canslim">CANSLIM</div><div class="post-title-text">PHR — Cup with handle đang hình thành, vùng mua hợp lý ở đâu?</div><div class="post-meta">5 tháng 6 · 6 phút đọc</div></div>
+            <div class="post-num">01</div>
+          </a>
+          <a href="post.html" class="post-item">
+            <div><div class="post-cat vimo">Vĩ mô VN</div><div class="post-title-text">Tại sao tôi theo dõi dòng tiền ngoại trên HOSE mỗi tuần</div><div class="post-meta">29 tháng 5 · 5 phút đọc</div></div>
+            <div class="post-num">02</div>
+          </a>
+          <a href="post.html" class="post-item">
+            <div><div class="post-cat nganh">Phân tích ngành</div><div class="post-title-text">GMD và bài toán logistics cảng biển sau khi cổ phần hóa sâu hơn</div><div class="post-meta">20 tháng 5 · 7 phút đọc</div></div>
+            <div class="post-num">03</div>
+          </a>
+          <a href="post.html" class="post-item">
+            <div><div class="post-cat kienthuc">Kiến thức</div><div class="post-title-text">Đọc bảng điện như thế nào để nhận biết sớm dấu hiệu accumulation?</div><div class="post-meta">10 tháng 5 · 9 phút đọc</div></div>
+            <div class="post-num">04</div>
+          </a>
+        </div>
       </div>
     </div>
+
     <div class="sidebar">
       <div class="about-card">
         <div class="about-top">
           <div class="avatar-lg">D</div>
-          <div>
-            <div class="about-name">Damien Nguyen</div>
-            <div class="about-role">Penn State · Intern tại SSI</div>
-          </div>
+          <div><div class="about-name">Damien Nguyen</div><div class="about-role">Penn State · Intern tại SSI</div></div>
         </div>
-        <div class="about-bio">Sinh viên tài chính chia sẻ góc nhìn về chứng khoán Việt Nam. Không phải khuyến nghị đầu tư.</div>
+        <div class="about-bio">Sinh viên tài chính đang học cách phân tích thị trường chứng khoán Việt Nam — chia sẻ góc nhìn cá nhân, không phải khuyến nghị đầu tư.</div>
+      </div>
+      <div class="watch-list">
+        <div class="card-header"><span class="card-label">Danh sách theo dõi</span></div>
+        <div class="watch-row"><span class="watch-ticker">MSN</span><span class="watch-price">89.500</span><span class="watch-chg up">+1,2%</span></div>
+        <div class="watch-row"><span class="watch-ticker">PHR</span><span class="watch-price">52.400</span><span class="watch-chg dn">−0,8%</span></div>
+        <div class="watch-row"><span class="watch-ticker">GMD</span><span class="watch-price">71.200</span><span class="watch-chg up">+0,6%</span></div>
+        <div class="watch-row"><span class="watch-ticker">MWG</span><span class="watch-price">44.300</span><span class="watch-chg up">+2,1%</span></div>
+        <div class="watch-row"><span class="watch-ticker">VIC</span><span class="watch-price">38.100</span><span class="watch-chg dn">−0,3%</span></div>
       </div>
     </div>
   </div>
