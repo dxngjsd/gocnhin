@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phân tích — GócNhìn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYC9w4BTV-JTwF-7ha3K-63FaA9LOsukY",
+      authDomain: "gocnhin-d6d91.firebaseapp.com",
+      projectId: "gocnhin-d6d91",
+      storageBucket: "gocnhin-d6d91.firebasestorage.app",
+      messagingSenderId: "60814793201",
+      appId: "1:60814793201:web:fdc96709ecda6121764c50"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlCat = new URLSearchParams(window.location.search).get('cat');
+    let activeCat = urlCat || 'Tất cả';
+
+    async function loadPosts(filter = 'Tất cả') {
+      const container = document.getElementById('post-grid');
+      container.innerHTML = '<p class="empty">Đang tải...</p>';
+      try {
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        let posts = [];
+        snapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
+        if (filter !== 'Tất cả') posts = posts.filter(p => p.category === filter);
+        if (posts.length === 0) { container.innerHTML = '<p class="empty">Chưa có bài viết nào.</p>'; return; }
+        container.innerHTML = posts.map(p => `
+          <a href="post.html?id=${p.id}" class="post-card">
+            ${p.category ? `<div class="post-cat ${catClass(p.category)}">${p.category}</div>` : ''}
+            <div class="post-card-title">${p.title}</div>
+            <div class="post-card-excerpt">${(p.excerpt || p.content.slice(0, 120))}...</div>
+            <div class="post-card-footer">
+              <span class="post-card-meta">${formatDate(p.createdAt)} · ${readTime(p.content)} phút đọc</span>
+              <span class="arrow">→</span>
+            </div>
+          </a>
+        `).join('');
+      } catch (e) {
+        container.innerHTML = '<p class="empty">Lỗi tải bài. Kiểm tra Firebase config.</p>';
+      }
+    }
+
+    function formatDate(ts) {
+      if (!ts) return '';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'long' });
+    }
+    function readTime(c) { return Math.max(1, Math.ceil((c||'').split(' ').length / 200)); }
+    function catClass(cat) {
+      return { 'CANSLIM':'canslim','Vĩ mô VN':'vimo','Phân tích ngành':'nganh','Kiến thức':'kienthuc' }[cat] || 'kienthuc';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        if (btn.dataset.cat === activeCat) btn.classList.add('active');
+        btn.addEventListener('click', () => {
+          activeCat = btn.dataset.cat;
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          loadPosts(activeCat);
+        });
+      });
+      loadPosts(activeCat);
+    });
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-400: #1D9E75; --teal-600: #0F6E56;
+      --blue-50: #E6F1FB; --blue-600: #185FA5;
+      --amber-50: #FAEEDA; --amber-600: #BA7517;
+      --purple-50: #EEEDFE; --purple-600: #534AB7;
+      --text-primary: #1a1a18; --text-secondary: #5F5E5A; --text-tertiary: #888780;
+      --bg-primary: #ffffff; --bg-secondary: #F8F7F3; --border: rgba(0,0,0,0.1);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text-primary: #F1EFE8; --text-secondary: #B4B2A9; --text-tertiary: #888780;
+        --bg-primary: #1C1C1A; --bg-secondary: #242422; --border: rgba(255,255,255,0.1);
+        --teal-50: #04342C; --teal-100: #085041; --teal-400: #5DCAA5; --teal-600: #9FE1CB;
+        --blue-50: #042C53; --blue-600: #85B7EB;
+        --amber-50: #412402; --amber-600: #FAC775;
+        --purple-50: #26215C; --purple-600: #AFA9EC;
+      }
+    }
+    body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg-secondary); color: var(--text-primary); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    nav { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 960px; margin: 0 auto; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; letter-spacing: -0.5px; display: flex; align-items: center; gap: 5px; }
+    .logo-dot { width: 7px; height: 7px; background: var(--teal-400); border-radius: 50%; }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { font-size: 13px; color: var(--text-secondary); }
+    .nav-links a:hover, .nav-links a.active { color: var(--text-primary); font-weight: 500; }
+    .page { max-width: 960px; margin: 0 auto; padding: 36px 32px 60px; }
+    .page-header { margin-bottom: 24px; }
+    .page-title { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 600; letter-spacing: -0.5px; margin-bottom: 4px; }
+    .page-sub { font-size: 14px; color: var(--text-secondary); }
+    .filter-row { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .filter-btn { font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 20px; border: 0.5px solid var(--border); background: var(--bg-primary); color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+    .filter-btn:hover { color: var(--text-primary); border-color: var(--teal-400); }
+    .filter-btn.active { background: var(--teal-400); color: #fff; border-color: var(--teal-400); }
+    .post-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .post-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: border-color 0.15s; }
+    .post-card:hover { border-color: var(--teal-400); }
+    .post-cat { font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; }
+    .post-cat.canslim { color: var(--purple-600); }
+    .post-cat.vimo { color: var(--blue-600); }
+    .post-cat.nganh { color: var(--amber-600); }
+    .post-cat.kienthuc { color: var(--teal-600); }
+    .post-card-title { font-size: 15px; font-weight: 500; line-height: 1.45; }
+    .post-card-excerpt { font-size: 13px; color: var(--text-secondary); line-height: 1.6; flex: 1; }
+    .post-card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 0.5px solid var(--border); }
+    .post-card-meta { font-size: 11px; color: var(--text-tertiary); }
+    .arrow { color: var(--teal-400); }
+    .empty { padding: 40px 20px; text-align: center; color: var(--text-tertiary); font-size: 14px; }
+    @media (max-width: 760px) {
+      .nav-links { display: none; }
+      .page { padding: 24px 20px 48px; }
+      .post-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="logo">GócNhìn <span class="logo-dot"></span></a>
+      <ul class="nav-links">
+        <li><a href="posts.html" class="active">Phân tích</a></li>
+        <li><a href="posts.html?cat=Vĩ+mô+VN">Vĩ mô</a></li>
+        <li><a href="posts.html?cat=CANSLIM">CANSLIM</a></li>
+        <li><a href="about.html">Về tôi</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="page">
+    <div class="page-header">
+      <h1 class="page-title">Tất cả bài viết</h1>
+      <p class="page-sub">Phân tích cổ phiếu, vĩ mô và phương pháp đầu tư</p>
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn" data-cat="Tất cả">Tất cả</button>
+      <button class="filter-btn" data-cat="CANSLIM">CANSLIM</button>
+      <button class="filter-btn" data-cat="Vĩ mô VN">Vĩ mô VN</button>
+      <button class="filter-btn" data-cat="Phân tích ngành">Phân tích ngành</button>
+      <button class="filter-btn" data-cat="Kiến thức">Kiến thức</button>
+    </div>
+    <div class="post-grid" id="post-grid"><p class="empty">Đang tải...</p></div>
+  </div>
+</body>
+</html>

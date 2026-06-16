@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GócNhìn — Phân tích chứng khoán Việt Nam</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ← Thay bằng Firebase config của bạn
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYC9w4BTV-JTwF-7ha3K-63FaA9LOsukY",
+      authDomain: "gocnhin-d6d91.firebaseapp.com",
+      projectId: "gocnhin-d6d91",
+      storageBucket: "gocnhin-d6d91.firebasestorage.app",
+      messagingSenderId: "60814793201",
+      appId: "1:60814793201:web:fdc96709ecda6121764c50"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadPosts() {
+      const container = document.getElementById('post-list');
+      const heroSection = document.getElementById('hero-section');
+      try {
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        const posts = [];
+        snapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
+
+        if (posts.length === 0) {
+          container.innerHTML = '<p class="empty">Chưa có bài viết nào.</p>';
+          return;
+        }
+
+        // Hero = bài mới nhất
+        const hero = posts[0];
+        heroSection.innerHTML = `
+          <div class="hero-tag">Bài nổi bật</div>
+          <h1 class="hero-title">${hero.title}</h1>
+          <p class="hero-excerpt">${hero.excerpt || hero.content.slice(0, 160)}...</p>
+          <div class="hero-footer">
+            <div class="author-chip"><div class="avatar">D</div> Damien Nguyen</div>
+            <span class="meta-sep">·</span>
+            <span class="meta-text">${formatDate(hero.createdAt)}</span>
+            ${hero.category ? `<span class="tag-pill">${hero.category}</span>` : ''}
+            <a href="post.html?id=${hero.id}" class="read-btn">Đọc bài →</a>
+          </div>
+        `;
+
+        // Remaining posts
+        container.innerHTML = posts.slice(1).map((p, i) => `
+          <a href="post.html?id=${p.id}" class="post-item">
+            <div>
+              ${p.category ? `<div class="post-cat ${catClass(p.category)}">${p.category}</div>` : ''}
+              <div class="post-title-text">${p.title}</div>
+              <div class="post-meta">${formatDate(p.createdAt)} · ${readTime(p.content)} phút đọc</div>
+            </div>
+            <div class="post-num">${String(i + 1).padStart(2, '0')}</div>
+          </a>
+        `).join('');
+
+      } catch (e) {
+        container.innerHTML = '<p class="empty">Lỗi tải bài viết. Kiểm tra Firebase config.</p>';
+        console.error(e);
+      }
+    }
+
+    function formatDate(ts) {
+      if (!ts) return '';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function readTime(content) {
+      return Math.max(1, Math.ceil((content || '').split(' ').length / 200));
+    }
+
+    function catClass(cat) {
+      const map = { 'CANSLIM': 'canslim', 'Vĩ mô VN': 'vimo', 'Phân tích ngành': 'nganh', 'Kiến thức': 'kienthuc' };
+      return map[cat] || 'kienthuc';
+    }
+
+    loadPosts();
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-400: #1D9E75; --teal-600: #0F6E56;
+      --blue-50: #E6F1FB; --blue-600: #185FA5;
+      --amber-50: #FAEEDA; --amber-600: #BA7517;
+      --purple-50: #EEEDFE; --purple-600: #534AB7;
+      --text-primary: #1a1a18; --text-secondary: #5F5E5A; --text-tertiary: #888780;
+      --bg-primary: #ffffff; --bg-secondary: #F8F7F3; --border: rgba(0,0,0,0.1);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text-primary: #F1EFE8; --text-secondary: #B4B2A9; --text-tertiary: #888780;
+        --bg-primary: #1C1C1A; --bg-secondary: #242422; --border: rgba(255,255,255,0.1);
+        --teal-50: #04342C; --teal-100: #085041; --teal-400: #5DCAA5; --teal-600: #9FE1CB;
+        --blue-50: #042C53; --blue-600: #85B7EB;
+        --amber-50: #412402; --amber-600: #FAC775;
+        --purple-50: #26215C; --purple-600: #AFA9EC;
+      }
+    }
+    body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg-secondary); color: var(--text-primary); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    nav { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 960px; margin: 0 auto; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; letter-spacing: -0.5px; display: flex; align-items: center; gap: 5px; }
+    .logo-dot { width: 7px; height: 7px; background: var(--teal-400); border-radius: 50%; }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { font-size: 13px; color: var(--text-secondary); transition: color 0.15s; }
+    .nav-links a:hover { color: var(--text-primary); }
+    .page { max-width: 960px; margin: 0 auto; padding: 28px 32px 60px; display: grid; grid-template-columns: minmax(0,1fr) 280px; gap: 20px; align-items: start; }
+    .hero { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 16px; padding: 40px 44px 36px; margin-bottom: 24px; min-height: 220px; }
+    .hero-tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-600); background: var(--teal-50); padding: 4px 10px; border-radius: 20px; margin-bottom: 18px; }
+    .hero-title { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 600; line-height: 1.28; letter-spacing: -0.5px; margin-bottom: 14px; }
+    .hero-excerpt { font-size: 15px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 24px; }
+    .hero-footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .author-chip { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-secondary); }
+    .avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--teal-400); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: #fff; }
+    .meta-sep { color: var(--text-tertiary); }
+    .meta-text { font-size: 12px; color: var(--text-tertiary); }
+    .tag-pill { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 12px; background: var(--blue-50); color: var(--blue-600); }
+    .read-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 500; color: var(--teal-400); border: 0.5px solid var(--teal-100); background: var(--teal-50); padding: 7px 14px; border-radius: 8px; cursor: pointer; transition: opacity 0.15s; }
+    .read-btn:hover { opacity: 0.8; }
+    .card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 12px; border-bottom: 0.5px solid var(--border); }
+    .card-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); }
+    .see-all { font-size: 12px; color: var(--teal-400); font-weight: 500; }
+    .post-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 16px 20px; border-bottom: 0.5px solid var(--border); gap: 14px; cursor: pointer; transition: background 0.12s; }
+    .post-item:last-child { border-bottom: none; }
+    .post-item:hover { background: var(--bg-secondary); }
+    .post-cat { font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 5px; }
+    .post-cat.canslim { color: var(--purple-600); }
+    .post-cat.vimo { color: var(--blue-600); }
+    .post-cat.nganh { color: var(--amber-600); }
+    .post-cat.kienthuc { color: var(--teal-600); }
+    .post-title-text { font-size: 14px; font-weight: 500; line-height: 1.45; color: var(--text-primary); margin-bottom: 6px; }
+    .post-meta { font-size: 11px; color: var(--text-tertiary); }
+    .post-num { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 600; color: var(--border); letter-spacing: -1px; min-width: 32px; text-align: right; flex-shrink: 0; }
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+    .about-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 16px; padding: 20px; }
+    .about-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .avatar-lg { width: 44px; height: 44px; border-radius: 50%; background: var(--teal-400); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: #fff; }
+    .about-name { font-size: 15px; font-weight: 500; }
+    .about-role { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .about-bio { font-size: 13px; color: var(--text-secondary); line-height: 1.6; border-top: 0.5px solid var(--border); padding-top: 12px; }
+    .empty { padding: 20px; font-size: 14px; color: var(--text-tertiary); text-align: center; }
+    footer { border-top: 0.5px solid var(--border); padding: 24px 0 40px; }
+    .footer-inner { max-width: 960px; margin: 0 auto; padding: 0 32px; display: flex; justify-content: space-between; font-size: 12px; color: var(--text-tertiary); }
+    @media (max-width: 760px) {
+      .nav-links { display: none; }
+      .page { grid-template-columns: 1fr; padding: 20px; }
+      .sidebar { display: none; }
+      .hero { padding: 28px 20px; }
+      .hero-title { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="logo">GócNhìn <span class="logo-dot"></span></a>
+      <ul class="nav-links">
+        <li><a href="posts.html">Phân tích</a></li>
+        <li><a href="posts.html?cat=Vĩ+mô+VN">Vĩ mô</a></li>
+        <li><a href="posts.html?cat=CANSLIM">CANSLIM</a></li>
+        <li><a href="about.html">Về tôi</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div>
+      <div class="hero" id="hero-section">
+        <div class="hero-tag">Bài nổi bật</div>
+        <p style="color:var(--text-tertiary);font-size:14px;">Đang tải...</p>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-label">Bài viết gần đây</span>
+          <a href="posts.html" class="see-all">Xem tất cả →</a>
+        </div>
+        <div id="post-list"><p class="empty">Đang tải...</p></div>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="about-card">
+        <div class="about-top">
+          <div class="avatar-lg">D</div>
+          <div>
+            <div class="about-name">Damien Nguyen</div>
+            <div class="about-role">Penn State · Intern tại SSI</div>
+          </div>
+        </div>
+        <div class="about-bio">Sinh viên tài chính chia sẻ góc nhìn về chứng khoán Việt Nam. Không phải khuyến nghị đầu tư.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© 2025 GócNhìn</span>
+      <span>Không phải khuyến nghị đầu tư</span>
+    </div>
+  </footer>
+</body>
+</html>

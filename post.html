@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bài viết — GócNhìn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYC9w4BTV-JTwF-7ha3K-63FaA9LOsukY",
+      authDomain: "gocnhin-d6d91.firebaseapp.com",
+      projectId: "gocnhin-d6d91",
+      storageBucket: "gocnhin-d6d91.firebasestorage.app",
+      messagingSenderId: "60814793201",
+      appId: "1:60814793201:web:fdc96709ecda6121764c50"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const id = new URLSearchParams(window.location.search).get('id');
+
+    async function loadPost() {
+      if (!id) { document.getElementById('content').innerHTML = '<p>Không tìm thấy bài viết.</p>'; return; }
+      try {
+        const snap = await getDoc(doc(db, "posts", id));
+        if (!snap.exists()) { document.getElementById('content').innerHTML = '<p>Bài viết không tồn tại.</p>'; return; }
+        const p = snap.data();
+        document.title = p.title + ' — GócNhìn';
+        document.getElementById('content').innerHTML = `
+          <div class="back-link-wrap"><a href="index.html" class="back-link">← Trang chủ</a></div>
+          <div class="article-header">
+            ${p.category ? `<div class="article-cat">${p.category}</div>` : ''}
+            <h1 class="article-title">${p.title}</h1>
+            <div class="article-meta">
+              <div class="author-chip"><div class="avatar">D</div> Damien Nguyen</div>
+              <span class="meta-sep">·</span>
+              <span class="meta-text">${formatDate(p.createdAt)}</span>
+              <span class="meta-sep">·</span>
+              <span class="meta-text">${readTime(p.content)} phút đọc</span>
+            </div>
+          </div>
+          <div class="article-body">${p.content.replace(/\n/g, '<br/>')}</div>
+          <div class="risk-note">Đây là góc nhìn cá nhân, không phải khuyến nghị đầu tư.</div>
+        `;
+      } catch (e) {
+        document.getElementById('content').innerHTML = '<p>Lỗi tải bài. Kiểm tra Firebase config.</p>';
+      }
+    }
+
+    function formatDate(ts) {
+      if (!ts) return '';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function readTime(content) {
+      return Math.max(1, Math.ceil((content || '').split(' ').length / 200));
+    }
+
+    loadPost();
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-400: #1D9E75; --teal-600: #0F6E56;
+      --amber-50: #FAEEDA; --amber-600: #BA7517;
+      --text-primary: #1a1a18; --text-secondary: #5F5E5A; --text-tertiary: #888780;
+      --bg-primary: #ffffff; --bg-secondary: #F8F7F3; --border: rgba(0,0,0,0.1);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text-primary: #F1EFE8; --text-secondary: #B4B2A9; --text-tertiary: #888780;
+        --bg-primary: #1C1C1A; --bg-secondary: #242422; --border: rgba(255,255,255,0.1);
+        --teal-50: #04342C; --teal-100: #085041; --teal-400: #5DCAA5; --teal-600: #9FE1CB;
+        --amber-50: #412402; --amber-600: #FAC775;
+      }
+    }
+    body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg-secondary); color: var(--text-primary); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    nav { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 960px; margin: 0 auto; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; letter-spacing: -0.5px; display: flex; align-items: center; gap: 5px; }
+    .logo-dot { width: 7px; height: 7px; background: var(--teal-400); border-radius: 50%; }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { font-size: 13px; color: var(--text-secondary); }
+    .nav-links a:hover { color: var(--text-primary); }
+    .page { max-width: 720px; margin: 0 auto; padding: 36px 32px 80px; }
+    .back-link { font-size: 13px; color: var(--text-tertiary); display: inline-flex; align-items: center; gap: 5px; margin-bottom: 24px; transition: color 0.15s; }
+    .back-link:hover { color: var(--teal-400); }
+    .back-link-wrap { margin-bottom: 0; }
+    .article-cat { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--amber-600); background: var(--amber-50); padding: 4px 10px; border-radius: 20px; margin-bottom: 14px; }
+    .article-header { margin-bottom: 28px; }
+    .article-title { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 600; line-height: 1.28; letter-spacing: -0.5px; margin-bottom: 14px; }
+    .article-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .author-chip { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text-secondary); }
+    .avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--teal-400); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: #fff; }
+    .meta-sep { color: var(--text-tertiary); }
+    .meta-text { font-size: 12px; color: var(--text-tertiary); }
+    .article-body { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 16px; padding: 36px 40px; font-size: 15px; line-height: 1.8; color: var(--text-secondary); }
+    .risk-note { margin-top: 20px; font-size: 12px; color: var(--text-tertiary); border-top: 0.5px solid var(--border); padding-top: 16px; }
+    @media (max-width: 760px) {
+      .nav-links { display: none; }
+      .page { padding: 20px 20px 60px; }
+      .article-body { padding: 24px 20px; }
+      .article-title { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="logo">GócNhìn <span class="logo-dot"></span></a>
+      <ul class="nav-links">
+        <li><a href="posts.html">Phân tích</a></li>
+        <li><a href="posts.html?cat=Vĩ+mô+VN">Vĩ mô</a></li>
+        <li><a href="posts.html?cat=CANSLIM">CANSLIM</a></li>
+        <li><a href="about.html">Về tôi</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="page">
+    <div id="content"><p style="color:var(--text-tertiary);font-size:14px;">Đang tải...</p></div>
+  </div>
+</body>
+</html>

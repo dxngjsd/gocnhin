@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Về tôi — GócNhìn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-400: #1D9E75; --teal-600: #0F6E56;
+      --blue-50: #E6F1FB; --blue-600: #185FA5;
+      --amber-50: #FAEEDA; --amber-600: #BA7517;
+      --purple-50: #EEEDFE; --purple-600: #534AB7;
+      --text-primary: #1a1a18; --text-secondary: #5F5E5A; --text-tertiary: #888780;
+      --bg-primary: #ffffff; --bg-secondary: #F8F7F3; --border: rgba(0,0,0,0.1);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text-primary: #F1EFE8; --text-secondary: #B4B2A9; --text-tertiary: #888780;
+        --bg-primary: #1C1C1A; --bg-secondary: #242422; --border: rgba(255,255,255,0.1);
+        --teal-50: #04342C; --teal-100: #085041; --teal-400: #5DCAA5; --teal-600: #9FE1CB;
+        --blue-50: #042C53; --blue-600: #85B7EB;
+        --amber-50: #412402; --amber-600: #FAC775;
+        --purple-50: #26215C; --purple-600: #AFA9EC;
+      }
+    }
+    body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg-secondary); color: var(--text-primary); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+    nav { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 960px; margin: 0 auto; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; letter-spacing: -0.5px; display: flex; align-items: center; gap: 5px; }
+    .logo-dot { width: 7px; height: 7px; background: var(--teal-400); border-radius: 50%; }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a { font-size: 13px; color: var(--text-secondary); }
+    .nav-links a:hover { color: var(--text-primary); }
+    .nav-links a.active { color: var(--text-primary); font-weight: 500; }
+    .page { max-width: 720px; margin: 0 auto; padding: 52px 32px 80px; }
+    .profile-top { display: flex; align-items: center; gap: 24px; margin-bottom: 36px; padding-bottom: 36px; border-bottom: 0.5px solid var(--border); }
+    .avatar-xl { width: 72px; height: 72px; border-radius: 50%; background: var(--teal-400); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .profile-name { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 600; letter-spacing: -0.3px; margin-bottom: 4px; }
+    .profile-role { font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; }
+    .profile-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .ptag { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 12px; }
+    .ptag.teal { background: var(--teal-50); color: var(--teal-600); }
+    .ptag.blue { background: var(--blue-50); color: var(--blue-600); }
+    .ptag.purple { background: var(--purple-50); color: var(--purple-600); }
+    .ptag.amber { background: var(--amber-50); color: var(--amber-600); }
+    .section { margin-bottom: 36px; }
+    .section-title { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600; margin-bottom: 14px; letter-spacing: -0.2px; }
+    .body-text { font-size: 15px; line-height: 1.75; color: var(--text-secondary); margin-bottom: 14px; }
+    .body-text strong { color: var(--text-primary); font-weight: 500; }
+    .roadmap { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .roadmap-row { display: flex; align-items: flex-start; gap: 16px; padding: 16px 20px; border-bottom: 0.5px solid var(--border); }
+    .roadmap-row:last-child { border-bottom: none; }
+    .roadmap-year { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600; color: var(--teal-400); min-width: 64px; padding-top: 1px; }
+    .roadmap-title { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+    .roadmap-sub { font-size: 12px; color: var(--text-tertiary); line-height: 1.5; }
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .contact-card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; gap: 12px; transition: border-color 0.15s; }
+    .contact-card:hover { border-color: var(--teal-400); }
+    .contact-icon { font-size: 20px; }
+    .contact-label { font-size: 12px; color: var(--text-tertiary); margin-bottom: 2px; }
+    .contact-value { font-size: 14px; font-weight: 500; }
+    .disclaimer { font-size: 12px; color: var(--text-tertiary); line-height: 1.6; border-top: 0.5px solid var(--border); padding-top: 24px; margin-top: 36px; }
+    @media (max-width: 760px) {
+      .nav-links { display: none; }
+      .page { padding: 32px 20px 60px; }
+      .profile-top { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="logo">GócNhìn <span class="logo-dot"></span></a>
+      <ul class="nav-links">
+        <li><a href="posts.html">Phân tích</a></li>
+        <li><a href="posts.html?cat=Vĩ+mô+VN">Vĩ mô</a></li>
+        <li><a href="posts.html?cat=CANSLIM">CANSLIM</a></li>
+        <li><a href="about.html" class="active">Về tôi</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="page">
+    <div class="profile-top">
+      <div class="avatar-xl">D</div>
+      <div>
+        <div class="profile-name">Damien Nguyen</div>
+        <div class="profile-role">Sinh viên BBA · Penn State Behrend · Intern tại SSI Securities</div>
+        <div class="profile-tags">
+          <span class="ptag teal">Chứng khoán VN</span>
+          <span class="ptag blue">Corporate Finance</span>
+          <span class="ptag purple">CANSLIM</span>
+          <span class="ptag amber">Startup & VC</span>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Tôi là ai</div>
+      <p class="body-text">Tôi là Damien — sinh viên năm nhất ngành Quản trị Kinh doanh tại <strong>Penn State Erie, The Behrend College</strong>. Mùa hè này tôi đang thực tập tại <strong>SSI Securities</strong> và dành nhiều thời gian cho thị trường chứng khoán Việt Nam.</p>
+      <p class="body-text">Blog này là nơi tôi ghi lại quá trình học phân tích — từ cách đọc bảng điện, áp dụng CANSLIM, đến những suy nghĩ về định giá cổ phiếu cụ thể. Mục tiêu không phải là đưa ra khuyến nghị, mà là <strong>học bằng cách viết ra</strong>.</p>
+    </div>
+    <div class="section">
+      <div class="section-title">Lộ trình dài hạn</div>
+      <div class="roadmap">
+        <div class="roadmap-row"><div class="roadmap-year">2025–26</div><div><div class="roadmap-title">Intern SSI Securities · Học phân tích chứng khoán VN</div><div class="roadmap-sub">CANSLIM, financial modeling, đọc báo cáo tài chính</div></div></div>
+        <div class="roadmap-row"><div class="roadmap-year">2027</div><div><div class="roadmap-title">Big 4 TAS / Financial Advisory Internship tại Mỹ</div><div class="roadmap-sub">Deloitte, PwC hoặc EY Transaction Services</div></div></div>
+        <div class="roadmap-row"><div class="roadmap-year">2028</div><div><div class="roadmap-title">Investment Banking Summer Analyst</div><div class="roadmap-sub">JPMorgan Asia Coverage hoặc Goldman Sachs TMT</div></div></div>
+        <div class="roadmap-row"><div class="roadmap-year">2029+</div><div><div class="roadmap-title">IB Analyst → Operator tại startup/tech VN</div><div class="roadmap-sub">MoMo, VNPay, VNG — trước khi tự khởi nghiệp</div></div></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Liên hệ</div>
+      <div class="contact-grid">
+        <div class="contact-card"><span class="contact-icon">✉️</span><div><div class="contact-label">Email</div><div class="contact-value">damien@example.com</div></div></div>
+        <div class="contact-card"><span class="contact-icon">💼</span><div><div class="contact-label">LinkedIn</div><div class="contact-value">linkedin.com/in/damien</div></div></div>
+      </div>
+    </div>
+    <div class="disclaimer">Tất cả nội dung trên blog này là góc nhìn cá nhân và phục vụ mục đích học tập. Không phải khuyến nghị đầu tư.</div>
+  </div>
+</body>
+</html>
