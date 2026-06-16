@@ -104,13 +104,13 @@
     .nav-links { display: flex; gap: 28px; list-style: none; align-items: center; }
     .nav-links a { font-size: 13px; color: var(--text-secondary); transition: color 0.15s; }
     .nav-links a:hover { color: var(--text-primary); }
-    .nav-item-with-plus { display: flex; align-items: center; gap: 5px; }
     .admin-plus {
-      width: 18px; height: 18px; border-radius: 50%;
+      width: 26px; height: 26px; border-radius: 8px;
       background: var(--teal-50); border: 0.5px solid var(--teal-100);
       display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 600; color: var(--teal-600);
+      font-size: 16px; font-weight: 500; color: var(--teal-600);
       cursor: pointer; transition: all 0.15s; line-height: 1;
+      margin-right: 4px;
     }
     .admin-plus:hover { background: var(--teal-400); color: #fff; border-color: var(--teal-400); }
 
@@ -192,10 +192,8 @@
     <div class="nav-inner">
       <a href="index.html" class="logo">GócNhìn <span class="logo-dot"></span></a>
       <ul class="nav-links">
-        <li class="nav-item-with-plus">
-          <a href="posts.html">Phân tích</a>
-          <a href="admin.html" class="admin-plus" title="Đăng bài mới">+</a>
-        </li>
+        <li><a href="admin.html" class="admin-plus" title="Tạo bài viết mới">+</a></li>
+        <li><a href="posts.html">Phân tích</a></li>
         <li><a href="posts.html?cat=Vĩ+mô+VN">Vĩ mô</a></li>
         <li><a href="posts.html?cat=CANSLIM">CANSLIM</a></li>
         <li><a href="about.html">Về tôi</a></li>
