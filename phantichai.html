@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phân tích AI — GócNhìn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-400: #1D9E75; --teal-600: #0F6E56;
+      --blue-50: #E6F1FB; --blue-600: #185FA5;
+      --amber-50: #FAEEDA; --amber-600: #BA7517;
+      --purple-50: #EEEDFE; --purple-600: #534AB7;
+      --text-primary: #1a1a18; --text-secondary: #5F5E5A; --text-tertiary: #888780;
+      --bg-primary: #ffffff; --bg-secondary: #F8F7F3; --border: rgba(0,0,0,0.1);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text-primary: #F1EFE8; --text-secondary: #B4B2A9; --text-tertiary: #888780;
+        --bg-primary: #1C1C1A; --bg-secondary: #242422; --border: rgba(255,255,255,0.1);
+        --teal-50: #04342C; --teal-100: #085041; --teal-400: #5DCAA5; --teal-600: #9FE1CB;
+        --blue-50: #042C53; --blue-600: #85B7EB;
+        --amber-50: #412402; --amber-600: #FAC775;
+        --purple-50: #26215C; --purple-600: #AFA9EC;
+      }
+    }
+    body { font-family: 'Be Vietnam Pro', sans-serif; background: var(--bg-secondary); color: var(--text-primary); min-height: 100vh; }
+    a { text-decoration: none; color: inherit; }
+
+    nav { background: var(--bg-primary); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { max-width: 960px; margin: 0 auto; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; letter-spacing: -0.5px; display: flex; align-items: center; gap: 5px; }
+    .logo-dot { width: 7px; height: 7px; background: var(--teal-400); border-radius: 50%; }
+    .nav-links { display: flex; gap: 28px; list-style: none; align-items: center; }
+    .nav-links a { font-size: 13px; color: var(--text-secondary); }
+    .nav-links a:hover, .nav-links a.active { color: var(--text-primary); font-weight: 500; }
+    .admin-plus { width: 26px; height: 26px; border-radius: 8px; background: var(--teal-50); border: 0.5px solid var(--teal-100); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 500; color: var(--teal-600); cursor: pointer; transition: all 0.15s; }
+    .admin-plus:hover { background: var(--teal-400); color: #fff; border-color: var(--teal-400); }
+
+    .page { max-width: 960px; margin: 0 auto; padding: 36px 32px 80px; }
+
+    /* HERO */
+    .ai-hero {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 44px;
+      margin-bottom: 28px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .ai-hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--teal-600);
+      background: var(--teal-50); padding: 4px 10px;
+      border-radius: 20px; margin-bottom: 14px;
+    }
+
+    .ai-badge-dot { width: 6px; height: 6px; background: var(--teal-400); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .ai-hero-title { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 600; letter-spacing: -0.5px; line-height: 1.3; margin-bottom: 10px; }
+    .ai-hero-sub { font-size: 14px; color: var(--text-secondary); line-height: 1.65; }
+
+    /* INPUT BOX */
+    .input-box {
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .input-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 10px; }
+
+    .ticker-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+
+    .ticker-input {
+      flex: 1; padding: 10px 14px;
+      border: 0.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 15px; font-weight: 600;
+      font-family: 'Space Grotesk', sans-serif;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .ticker-input:focus { border-color: var(--teal-400); }
+    .ticker-input::placeholder { color: var(--text-tertiary); font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+    .analyze-btn {
+      padding: 10px 20px;
+      background: var(--teal-400); color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+      font-family: inherit; cursor: pointer;
+      transition: opacity 0.15s; white-space: nowrap;
+    }
+    .analyze-btn:hover:not(:disabled) { opacity: 0.85; }
+    .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .quick-tickers { display: flex; gap: 6px; flex-wrap: wrap; }
+    .quick-btn {
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px; border-radius: 8px;
+      border: 0.5px solid var(--border);
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+      transition: all 0.12s;
+    }
+    .quick-btn:hover { border-color: var(--teal-400); color: var(--teal-400); }
+
+    /* REPORT */
+    .report-wrap { display: none; }
+    .report-wrap.visible { display: block; }
+
+    .report-card {
+      background: var(--bg-primary);
+      border: 0.5px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .report-header {
+      padding: 20px 28px;
+      border-bottom: 0.5px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .report-ticker-badge {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px; font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .report-meta { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+
+    .report-status {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 500;
+    }
+
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal-400); }
+    .status-dot.loading { animation: pulse 1s infinite; }
+
+    .report-body { padding: 28px; }
+
+    /* Streaming text */
+    .report-text {
+      font-size: 14px; line-height: 1.8;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+    }
+
+    .report-text h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px; font-weight: 600;
+      color: var(--text-primary);
+      margin: 20px 0 8px;
+    }
+    .report-text h2:first-child { margin-top: 0; }
+
+    .report-text strong { color: var(--text-primary); font-weight: 500; }
+
+    .loading-state {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 60px 20px; gap: 14px;
+    }
+
+    .loading-spinner {
+      width: 32px; height: 32px;
+      border: 2px solid var(--border);
+      border-top-color: var(--teal-400);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 13px; color: var(--text-tertiary); }
+
+    .disclaimer {
+      margin: 20px 28px 24px;
+      font-size: 11px; color: var(--text-tertiary);
+      border-top: 0.5px solid var(--border);
+      padding-top: 16px; line-height: 1.6;
+    }
+
+    /* HOW IT WORKS */
+    .how-section { margin-top: 28px; }
+    .how-title { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+    .how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+    .how-card {
+      background: var(--bg-primary); border: 0.5px solid var(--border);
+      border-radius: 14px; padding: 18px;
+    }
+    .how-num { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 600; color: var(--teal-400); margin-bottom: 8px; }
+    .how-card-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+    .how-card-sub { font-size: 12px; color: var(--text-tertiary); line-height: 1.5; }
+
+    @media (max-width: 760px) {
+      .nav-links { display: none; }
+      .page { padding: 20px 20px 60px; }
+      .ai-hero { grid-template-columns: 1fr; padding: 28px 24px; gap: 20px; }
+      .how-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="logo">GócNhìn <span class="logo-dot"></span></a>
+      <ul class="nav-links">
+        <li><a href="admin.html" class="admin-plus" title="Tạo bài viết mới">+</a></li>
+        <li><a href="posts.html">Phân tích</a></li>
+        <li><a href="posts.html?cat=Vĩ+mô+VN">Vĩ mô</a></li>
+        <li><a href="posts.html?cat=CANSLIM">CANSLIM</a></li>
+        <li><a href="phan-tich-ai.html" class="active">AI Analyst</a></li>
+        <li><a href="about.html">Về tôi</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page">
+    <div class="ai-hero">
+      <div>
+        <div class="ai-hero-badge"><span class="ai-badge-dot"></span> AI Analyst</div>
+        <h1 class="ai-hero-title">Phân tích cổ phiếu<br>bằng AI trong 30 giây</h1>
+        <p class="ai-hero-sub">Nhập mã cổ phiếu — AI sẽ phân tích tài chính, kỹ thuật và định giá theo framework CANSLIM, trả ra report 1 trang như analyst thực thụ.</p>
+      </div>
+      <div class="input-box">
+        <div class="input-label">Nhập mã cổ phiếu</div>
+        <div class="ticker-input-row">
+          <input class="ticker-input" id="ticker-input" placeholder="VD: MSN, PHR, GMD..." maxlength="10" />
+          <button class="analyze-btn" id="analyze-btn" onclick="analyze()">Phân tích →</button>
+        </div>
+        <div class="quick-tickers">
+          <span class="quick-label" style="font-size:11px;color:var(--text-tertiary);align-self:center;">Thử ngay:</span>
+          <button class="quick-btn" onclick="quickAnalyze('MSN')">MSN</button>
+          <button class="quick-btn" onclick="quickAnalyze('PHR')">PHR</button>
+          <button class="quick-btn" onclick="quickAnalyze('GMD')">GMD</button>
+          <button class="quick-btn" onclick="quickAnalyze('MWG')">MWG</button>
+          <button class="quick-btn" onclick="quickAnalyze('VIC')">VIC</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-wrap" id="report-wrap">
+      <div class="report-card">
+        <div class="report-header">
+          <div>
+            <div class="report-ticker-badge" id="report-ticker">—</div>
+            <div class="report-meta" id="report-meta">Đang phân tích...</div>
+          </div>
+          <div class="report-status">
+            <span class="status-dot loading" id="status-dot"></span>
+            <span id="status-text">Đang xử lý</span>
+          </div>
+        </div>
+        <div class="report-body" id="report-body">
+          <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">AI đang phân tích...</div>
+          </div>
+        </div>
+        <div class="disclaimer">
+          Nội dung trên được tạo bởi AI dựa trên thông tin công khai và chỉ phục vụ mục đích tham khảo, giáo dục. <strong>Không phải khuyến nghị đầu tư.</strong> Luôn tự nghiên cứu trước khi đưa ra quyết định tài chính.
+        </div>
+      </div>
+    </div>
+
+    <div class="how-section">
+      <div class="how-title">Cách hoạt động</div>
+      <div class="how-grid">
+        <div class="how-card">
+          <div class="how-num">01</div>
+          <div class="how-card-title">Nhập mã cổ phiếu</div>
+          <div class="how-card-sub">Bất kỳ mã nào trên HOSE, HNX hoặc UPCOM đều được hỗ trợ.</div>
+        </div>
+        <div class="how-card">
+          <div class="how-num">02</div>
+          <div class="how-card-title">AI phân tích đa chiều</div>
+          <div class="how-card-sub">Phân tích tài chính, kỹ thuật CANSLIM, định giá và rủi ro chính.</div>
+        </div>
+        <div class="how-card">
+          <div class="how-num">03</div>
+          <div class="how-card-title">Nhận report 1 trang</div>
+          <div class="how-card-sub">Kết quả trả về trong 30 giây, súc tích như báo cáo analyst thực thụ.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function quickAnalyze(ticker) {
+      document.getElementById('ticker-input').value = ticker;
+      analyze();
+    }
+
+    async function analyze() {
+      const ticker = document.getElementById('ticker-input').value.trim().toUpperCase();
+      if (!ticker) return;
+
+      const btn = document.getElementById('analyze-btn');
+      const reportWrap = document.getElementById('report-wrap');
+      const reportBody = document.getElementById('report-body');
+      const reportTicker = document.getElementById('report-ticker');
+      const reportMeta = document.getElementById('report-meta');
+      const statusDot = document.getElementById('status-dot');
+      const statusText = document.getElementById('status-text');
+
+      btn.disabled = true;
+      btn.textContent = 'Đang phân tích...';
+      reportWrap.classList.add('visible');
+      reportTicker.textContent = ticker;
+      reportMeta.textContent = new Date().toLocaleDateString('vi-VN', { day: 'numeric', month: 'long', year: 'numeric' });
+      statusDot.className = 'status-dot loading';
+      statusText.textContent = 'Đang xử lý';
+      reportBody.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><div class="loading-text">AI đang phân tích ${ticker}...</div></div>`;
+
+      reportWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      const prompt = `Bạn là một chuyên gia phân tích chứng khoán Việt Nam với 10 năm kinh nghiệm, chuyên áp dụng phương pháp CANSLIM và phân tích cơ bản.
+
+H�y viết một báo cáo phân tích ngắn gọn (1 trang) cho cổ phiếu ${ticker} niêm yết trên thị trường chứng khoán Việt Nam.
+
+Báo cáo cần có các phần sau, mỗi phần 2-3 câu súc tích:
+
+## Tổng quan doanh nghiệp
+Mô tả ngắn về công ty, ngành nghề, vị thế thị trường.
+
+## Điểm nổi bật tài chính
+Nhận xét về tăng trưởng doanh thu, lợi nhuận, EPS trong 1-2 năm gần đây. Đề cập biên lợi nhuận và ROE nếu đáng chú ý.
+
+## Phân tích theo CANSLIM
+Đánh giá ngắn gọn các tiêu chí C (EPS hiện tại), A (tăng trưởng hàng năm), N (catalyst mới), S (cung cầu cổ phiếu).
+
+## Định giá & Kỹ thuật
+Nhận xét về mức định giá hiện tại (P/E, P/B so với ngành), xu hướng giá và các mức hỗ trợ/kháng cự đáng chú ý.
+
+## Rủi ro chính
+2-3 rủi ro cụ thể nhất cần theo dõi với cổ phiếu này.
+
+Viết bằng tiếng Việt, chuyên nghiệp nhưng dễ hiểu. Dựa trên kiến thức của bạn về công ty này. Nếu không có đủ thông tin cụ thể, hãy phân tích theo ngành và đặc điểm chung của doanh nghiệp VN.`;
+
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 1000,
+            messages: [{ role: 'user', content: prompt }]
+          })
+        });
+
+        const data = await response.json();
+        const text = data.content?.[0]?.text || 'Không thể tạo phân tích. Vui lòng thử lại.';
+
+        // Render markdown-like formatting
+        const rendered = text
+          .replace(/## (.+)/g, '<h2>$1</h2>')
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\n/g, '\n');
+
+        reportBody.innerHTML = `<div class="report-text">${rendered}</div>`;
+        statusDot.className = 'status-dot';
+        statusText.textContent = 'Hoàn thành';
+
+      } catch (e) {
+        reportBody.innerHTML = `<div class="report-text" style="color:var(--text-tertiary);text-align:center;padding:40px 0;">Lỗi kết nối. Vui lòng thử lại.</div>`;
+        statusText.textContent = 'Lỗi';
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Phân tích →';
+    }
+
+    document.getElementById('ticker-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') analyze();
+    });
+  </script>
+</body>
+</html>
